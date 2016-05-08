@@ -1,0 +1,66 @@
+1、配置内网接口（Ethernet0/0）：
+[MSR20-20] interface Ethernet0/0
+[MSR20-20- Ethernet0/0]ip add 192.168.1.1 24
+2、使用动态分配地址的方式为局域网中的PC分配地址
+[MSR20-20]dhcp server ip-pool 1
+[MSR20-20-dhcp-pool-1]network 192.168.1.0 24
+[MSR20-20-dhcp-pool-1]dns-list 202.96.134.133
+[MSR20-20-dhcp-pool-1] gateway-list 192.168.1.1
+3、配置nat
+[MSR20-20]nat C-group 1 公网IP 公网IP
+[MSR20-20]acl number 3000
+[MSR20-20-acl-adv-3000]rule 0 permit ip
+4、配置外网接口（Ethernet0/1）
+[MSR20-20] interface Ethernet0/1
+[MSR20-20- Ethernet0/1]ip add 公网IP
+[MSR20-20- Ethernet0/1] nat outbound 3000 address-group 1
+5．加默缺省路由
+[MSR20-20]route-stac 0.0.0.0 0.0.0.0 外网网关
+总结：
+在2020路由器下面,
+配置外网口,
+配置内网口,
+配置acl 作nat,
+一条默认路由指向电信网关. ok!
+//禁止服务器地址参与自动分配
+dhcp server forbidden-ip 10.1.1.2 10.1.1.4
+dhcp server ip-pool 1
+network 10.1.1.0 mask 255.255.255.128
+gateway-list 10.1.1.1
+nbns-list 10.1.1.4
+expired day 10 hour 12
+//更改同时配置设备的用户数为5，默认为1，保证最多5个用户进入系统视图
+configure-user count 5
+#
+//打开Telnet服务器，缺省关闭，必须打开
+telnet server enable
+#
+//创建本地帐号与密码
+local-user h3c
+password simple h3c
+//设置服务类型为telnet
+service-type telnet
+//设置用户优先级为3
+level 3
+#
+//连接到telnet主机客户端
+interface Ethernet0/1
+port link-mode route
+ip address 192.168.0.1 255.255.255.0
+#
+//设置scheme认证
+user-interface vty 0 4
+authentication-mode scheme
+//设置子接口封装类型为vlan10
+interface Ethernet0/0.10
+vlan-type dot1q vid 10
+ip address 10.0.0.1 255.255.255.0
+#
+//设置子接口封装类型为vlan20
+interface Ethernet0/0.20
+vlan-type dot1q vid 20
+ip address 20.0.0.1 255.255.255.0
+#
+//设置子接口封装类型为vlan30
+interface Ethernet0/0.30 vlan-type dot1q vid 30
+ip address 30.0.0.1 255.255.255.0
