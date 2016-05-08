@@ -1,0 +1,25 @@
+<RouterA> system-view
+[RouterA] dialer-group 1 rule ip permit
+#在Dialer1接口上使能共享DDR。
+[RouterA] interface dialer 1
+[RouterA-Dialer1] dialer bundle enable
+#将Dialer1接口与拨号访问组1关联。
+[RouterA-Dialer1] dialer-group 1
+#配置Dialer1接口通过协商获取IP地址。
+[RouterA-Dialer1] ip address ppp-negotiate
+#配置PPPoE Client工作在永久在线模式。
+[RouterA-Dialer1] dialer timer idle 0
+#配置本地被Router B以PAP方式认证时Router A发送的PAP用户名和密码。
+[RouterA-Dialer1] ppp pap local-user user1 password simple 123456
+[RouterA-Dialer1]ppp chap password simple 123456
+[RouterA-Dialer1]ppp chap user user1
+[RouterA-Dialer1] nat outbound
+[RouterA-Dialer1] quit
+#配置PPPoE会话。
+[RouterA] interface gigabitethernet 1/0/1
+[RouterA-GigabitEthernet1/0/1] pppoe-client dial-bundle-number 1
+[RouterA-GigabitEthernet1/0/1] quit
+#配置缺省路由。
+[RouterA] ip route-static 0.0.0.0 0 dialer 1
+
+
