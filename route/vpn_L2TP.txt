@@ -1,0 +1,24 @@
+domain system
+   access-limit disable
+   state active
+   idle-cut disable
+   self-service-url disable
+   authentication ppp local
+   ip pool 1 192.168.80.2 192.168.80.100
+
+L2TP enable
+
+local-user dd
+  password cipher $c$3$pz9+GQooeGjGVzFa5hEDEFP8xEywSx3D+1gR4g==
+  service-type ppp
+
+l2tp-group 1
+  undo tunnel authentication
+  allow l2tp virtual-template 0
+  tunnel password cipher
+
+interface Virtual-Template0
+  ppp authentication-mode chap domain system
+  ppp ipcp dns 114.114.114.114 114.114.115.115
+  remote address pool 1
+  ip address 192.168.80.1 255.255.255.0
